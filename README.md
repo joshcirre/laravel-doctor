@@ -35,6 +35,38 @@ php artisan doctor --diff=main
 php artisan doctor --min-score=75
 ```
 
+Progress and banner output use Laravel's console UI components by default. Disable progress indicators with:
+
+```bash
+php artisan doctor --no-progress
+```
+
+## Auto-Fix
+
+Apply safe built-in automated fixes:
+
+```bash
+php artisan doctor:fix
+```
+
+Preview changes only:
+
+```bash
+php artisan doctor:fix --dry-run
+```
+
+Apply only for changed files:
+
+```bash
+php artisan doctor:fix --diff
+```
+
+Run an optional Rector pass after built-in fixers (when `vendor/bin/rector` exists):
+
+```bash
+php artisan doctor:fix --with-rector
+```
+
 ## Current Rule Set (MVP)
 
 - `laravel/no-debug-statements`
@@ -52,9 +84,9 @@ php artisan doctor --min-score=75
 - Applies weighted penalties by severity and category
 - Caps per-rule penalty to avoid one repeated issue collapsing score
 - Labels:
-  - `75+`: Great
-  - `50-74`: Needs work
-  - `0-49`: Critical
+  - `80+`: Great
+  - `55-79`: Needs work
+  - `0-54`: Critical
 
 ## CI Example
 

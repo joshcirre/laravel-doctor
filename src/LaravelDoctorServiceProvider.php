@@ -6,6 +6,7 @@ namespace Josh\LaravelDoctor;
 
 use Illuminate\Support\ServiceProvider;
 use Josh\LaravelDoctor\Console\DoctorCommand;
+use Josh\LaravelDoctor\Console\DoctorFixCommand;
 
 class LaravelDoctorServiceProvider extends ServiceProvider
 {
@@ -26,6 +27,7 @@ class LaravelDoctorServiceProvider extends ServiceProvider
 
         $this->commands([
             DoctorCommand::class,
+            DoctorFixCommand::class,
         ]);
     }
 }

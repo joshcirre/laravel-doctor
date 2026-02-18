@@ -42,7 +42,31 @@ class ScoreCalculatorTest extends TestCase
 
         $result = $calculator->calculate($diagnostics);
 
-        self::assertSame(75, $result->score);
+        self::assertSame(82, $result->score);
+        self::assertSame('Great', $result->label);
+    }
+
+    public function test_many_repeated_warnings_do_not_crater_score(): void
+    {
+        $calculator = new ScoreCalculator();
+
+        $diagnostics = [];
+
+        for ($index = 0; $index < 35; $index++) {
+            $diagnostics[] = new Diagnostic(
+                rule: 'laravel/no-debug-statements',
+                category: Category::Security,
+                severity: Severity::Warning,
+                message: 'Issue',
+                help: 'Fix',
+                file: 'app/Example.php',
+                line: $index + 1,
+            );
+        }
+
+        $result = $calculator->calculate($diagnostics);
+
+        self::assertGreaterThanOrEqual(80, $result->score);
         self::assertSame('Great', $result->label);
     }
 }

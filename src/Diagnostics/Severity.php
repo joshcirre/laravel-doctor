@@ -12,8 +12,8 @@ enum Severity: string
     public function weight(): int
     {
         return match ($this) {
-            self::Error => 8,
-            self::Warning => 3,
+            self::Error => 5,
+            self::Warning => 2,
         };
     }
 }

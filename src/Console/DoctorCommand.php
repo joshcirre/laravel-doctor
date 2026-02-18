@@ -12,6 +12,9 @@ use Josh\LaravelDoctor\Scanner\DoctorScanner;
 use Josh\LaravelDoctor\Scanner\FileCollector;
 use Josh\LaravelDoctor\Scanner\GitDiffResolver;
 use Josh\LaravelDoctor\Scoring\ScoreCalculator;
+use function Laravel\Prompts\note;
+use function Laravel\Prompts\spin;
+use function Laravel\Prompts\warning;
 
 class DoctorCommand extends Command
 {
@@ -33,6 +36,22 @@ class DoctorCommand extends Command
         /** @var array<string, mixed> $config */
         $config = config('laravel-doctor', []);
 
+        $format = strtolower((string) $this->option('format'));
+        $isScoreOnly = (bool) $this->option('score');
+        $useStyledOutput = ! $isScoreOnly && $format === 'table';
+        $showProgress = $useStyledOutput && ! (bool) $this->option('no-progress');
+
+        if ($useStyledOutput) {
+            $this->renderBanner();
+            $this->newLine();
+        }
+
+        $rules = $ruleRegistry->defaults($config);
+
+        if ($showProgress) {
+            note(sprintf('Loaded %d diagnostic rules.', count($rules)));
+        }
+
         $diffOption = $this->option('diff');
         $diffBase = is_string($diffOption) && $diffOption !== '' ? $diffOption : null;
         $shouldUseDiff = $this->input->hasParameterOption('--diff') || $diffBase !== null;
@@ -40,30 +59,43 @@ class DoctorCommand extends Command
             ? $gitDiffResolver->resolveChangedPhpFiles(base_path(), $diffBase)
             : null;
 
+        if ($showProgress) {
+            $scanMode = $shouldUseDiff ? 'Diff scan mode enabled' : 'Full project scan enabled';
+            note($scanMode);
+        }
+
         if ($shouldUseDiff && $scannedFilesSubset === null && ! $this->option('score')) {
-            $this->warn('Could not resolve diff base branch, falling back to full scan.');
+            warning('Could not resolve diff base branch, falling back to full scan.');
         }
 
         $scanner = new DoctorScanner(
             fileCollector: $fileCollector,
-            rules: $ruleRegistry->defaults($config),
+            rules: $rules,
         );
 
-        $scanResult = $scanner->scan(
+        $scanAction = fn () => $scanner->scan(
             basePath: base_path(),
             fileSubset: $scannedFilesSubset,
             ignoredRuleIds: $config['ignore']['rules'] ?? [],
             ignorePathPatterns: $config['ignore']['paths'] ?? [],
         );
 
+        $scanResult = $showProgress
+            ? spin($scanAction, 'Running diagnostics...')
+            : $scanAction();
+
+        if ($showProgress) {
+            note(sprintf('Scanned %d PHP files.', $scanResult->scannedFileCount));
+            $this->newLine();
+        }
+
         $scoreResult = $scoreCalculator->calculate($scanResult->diagnostics);
 
-        if ($this->option('score')) {
+        if ($isScoreOnly) {
             $this->line((string) $scoreResult->score);
             return $this->exitCodeForThreshold($scoreResult->score);
         }
 
-        $format = strtolower((string) $this->option('format'));
         $formatter = match ($format) {
             'json' => new JsonOutputFormatter(),
             default => new TableOutputFormatter(),
@@ -79,6 +111,23 @@ class DoctorCommand extends Command
         );
 
         return $this->exitCodeForThreshold($scoreResult->score);
+    }
+
+    private function renderBanner(): void
+    {
+        $bannerLines = [
+            ' _                                _ ____              _             ',
+            '| |    __ _ _ __ __ ___   _____| |  _ \  ___   ___| |_ ___  _ __ ',
+            '| |   / _` | `__/ _` \ \ / / _ \ | | | |/ _ \ / __| __/ _ \| `__|',
+            '| |__| (_| | | | (_| |\ V /  __/ | |_| | (_) | (__| || (_) | |   ',
+            '|_____\__,_|_|  \__,_| \_/ \___|_|____/ \___/ \___|\__\___/|_|   ',
+        ];
+
+        foreach ($bannerLines as $line) {
+            $this->line('<fg=red;options=bold>'.$line.'</>');
+        }
+
+        $this->line('<fg=yellow>Laravel Doctor</> <fg=gray>for Laravel and PHP code health</>');
     }
 
     private function exitCodeForThreshold(int $score): int

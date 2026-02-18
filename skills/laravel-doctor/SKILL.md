@@ -20,6 +20,18 @@ php artisan doctor -v
 - Security and correctness before architecture/maintainability
 - High-count rules before low-count rules
 
+If safe automated fixes are available, run:
+
+```bash
+php artisan doctor:fix
+```
+
+For preview only:
+
+```bash
+php artisan doctor:fix --dry-run
+```
+
 3. Re-run the scan and verify the score improved:
 
 ```bash
@@ -52,3 +64,4 @@ php artisan doctor --min-score=75
 
 - Use `--format=json` when another tool needs machine-readable output.
 - Keep suppressions minimal; prefer fixing root causes.
+- `doctor:fix --with-rector` will run Rector when available.

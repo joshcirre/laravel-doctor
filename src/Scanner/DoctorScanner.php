@@ -21,12 +21,14 @@ class DoctorScanner
      * @param  array<int, string>|null  $fileSubset
      * @param  array<int, string>  $ignoredRuleIds
      * @param  array<int, string>  $ignorePathPatterns
+     * @param  callable(string):void|null  $onRuleFinished
      */
     public function scan(
         string $basePath,
         ?array $fileSubset,
         array $ignoredRuleIds,
         array $ignorePathPatterns,
+        ?callable $onRuleFinished = null,
     ): ScanResult {
         $files = $this->fileCollector->collect($basePath, $fileSubset, $ignorePathPatterns);
 
@@ -35,10 +37,18 @@ class DoctorScanner
 
         foreach ($this->rules as $rule) {
             if (in_array($rule->id(), $ignoredRuleIds, true)) {
+                if ($onRuleFinished !== null) {
+                    $onRuleFinished($rule->id());
+                }
+
                 continue;
             }
 
             $diagnostics = [...$diagnostics, ...$rule->analyze($projectContext)];
+
+            if ($onRuleFinished !== null) {
+                $onRuleFinished($rule->id());
+            }
         }
 
         usort($diagnostics, static function ($left, $right): int {
