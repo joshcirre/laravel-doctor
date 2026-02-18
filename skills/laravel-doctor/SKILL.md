@@ -12,7 +12,7 @@ Use this skill when auditing a Laravel codebase for quality, security, performan
 1. Run Laravel Doctor at project root:
 
 ```bash
-php artisan doctor --verbose
+php artisan doctor -v
 ```
 
 2. Fix issues in this order:

@@ -27,7 +27,7 @@ php artisan doctor
 Common options:
 
 ```bash
-php artisan doctor --verbose
+php artisan doctor -v
 php artisan doctor --score
 php artisan doctor --format=json
 php artisan doctor --diff

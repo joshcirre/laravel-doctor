@@ -16,7 +16,6 @@ use Josh\LaravelDoctor\Scoring\ScoreCalculator;
 class DoctorCommand extends Command
 {
     protected $signature = 'doctor
-        {--verbose : Show detailed file-level diagnostics}
         {--score : Output only numeric score}
         {--diff= : Scan only changed files. Optional base branch, e.g. --diff=main}
         {--format=table : Output format (table|json)}
@@ -70,11 +69,13 @@ class DoctorCommand extends Command
             default => new TableOutputFormatter(),
         };
 
+        $showDetailedDiagnostics = $this->output->isVerbose();
+
         $formatter->render(
             command: $this,
             scanResult: $scanResult,
             scoreResult: $scoreResult,
-            verbose: (bool) $this->option('verbose'),
+            verbose: $showDetailedDiagnostics,
         );
 
         return $this->exitCodeForThreshold($scoreResult->score);
