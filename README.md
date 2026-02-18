@@ -35,6 +35,13 @@ php artisan doctor --diff=main
 php artisan doctor --min-score=75
 ```
 
+Trace scanned files:
+
+```bash
+php artisan doctor -v      # first 60 scanned files
+php artisan doctor -vv     # all scanned files
+```
+
 Progress and banner output use Laravel's console UI components by default. Disable progress indicators with:
 
 ```bash
@@ -66,6 +73,11 @@ Run an optional Rector pass after built-in fixers (when `vendor/bin/rector` exis
 ```bash
 php artisan doctor:fix --with-rector
 ```
+
+When diagnostics cannot be fixed programmatically, Laravel Doctor generates `.laravel-doctor/manual-fix-plan.md` with:
+
+- A ready-to-paste prompt for your coding agent
+- A rule-by-rule checklist with file and line references
 
 ## Current Rule Set (MVP)
 

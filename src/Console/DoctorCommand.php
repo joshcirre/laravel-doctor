@@ -86,6 +86,27 @@ class DoctorCommand extends Command
 
         if ($showProgress) {
             note(sprintf('Scanned %d PHP files.', $scanResult->scannedFileCount));
+
+            if ($this->output->isVerbose()) {
+                $this->line('<fg=cyan>Files scanned:</>');
+
+                $filesToDisplay = $this->output->isVeryVerbose()
+                    ? $scanResult->scannedFiles
+                    : array_slice($scanResult->scannedFiles, 0, 60);
+
+                foreach ($filesToDisplay as $relativePath) {
+                    $this->line('  - '.$relativePath);
+                }
+
+                if (! $this->output->isVeryVerbose() && count($scanResult->scannedFiles) > count($filesToDisplay)) {
+                    note(sprintf(
+                        'Showing %d/%d files. Re-run with -vv to print every scanned file.',
+                        count($filesToDisplay),
+                        count($scanResult->scannedFiles),
+                    ));
+                }
+            }
+
             $this->newLine();
         }
 

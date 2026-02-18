@@ -32,6 +32,8 @@ For preview only:
 php artisan doctor:fix --dry-run
 ```
 
+If unresolved diagnostics remain after `doctor:fix`, open `.laravel-doctor/manual-fix-plan.md` and paste the provided prompt block into your coding agent.
+
 3. Re-run the scan and verify the score improved:
 
 ```bash
@@ -65,3 +67,4 @@ php artisan doctor --min-score=75
 - Use `--format=json` when another tool needs machine-readable output.
 - Keep suppressions minimal; prefer fixing root causes.
 - `doctor:fix --with-rector` will run Rector when available.
+- Use `php artisan doctor -v` or `php artisan doctor -vv` to inspect scanned files.

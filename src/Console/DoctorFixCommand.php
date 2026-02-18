@@ -7,6 +7,7 @@ namespace Josh\LaravelDoctor\Console;
 use Illuminate\Console\Command;
 use Josh\LaravelDoctor\Fixers\FixRunner;
 use Josh\LaravelDoctor\Fixers\FixerRegistry;
+use Josh\LaravelDoctor\Fixers\ManualFixReportWriter;
 use Josh\LaravelDoctor\Fixers\RectorRunner;
 use Josh\LaravelDoctor\Rules\RuleRegistry;
 use Josh\LaravelDoctor\Scanner\DoctorScanner;
@@ -34,6 +35,7 @@ class DoctorFixCommand extends Command
         GitDiffResolver $gitDiffResolver,
         FixerRegistry $fixerRegistry,
         FixRunner $fixRunner,
+        ManualFixReportWriter $manualFixReportWriter,
         RectorRunner $rectorRunner,
     ): int {
         /** @var array<string, mixed> $config */
@@ -88,6 +90,20 @@ class DoctorFixCommand extends Command
             note(sprintf('Applied %d fixes across %d files.', $fixResult->appliedFixes, count($fixResult->fixedFiles)));
         }
 
+        if ($fixResult->fileDiffs !== []) {
+            $this->newLine();
+            note('Patch preview for programmatic fixes:');
+
+            foreach ($fixResult->fileDiffs as $relativePath => $diffText) {
+                if ($diffText === '') {
+                    continue;
+                }
+
+                $this->line('<fg=cyan>'.$relativePath.'</>');
+                $this->line($diffText);
+            }
+        }
+
         if ($fixResult->appliedRules !== []) {
             $this->line('Fixed rules:');
             foreach ($fixResult->appliedRules as $ruleId) {
@@ -101,6 +117,13 @@ class DoctorFixCommand extends Command
             foreach ($fixResult->unfixableRules as $ruleId) {
                 $this->line('  - '.$ruleId);
             }
+
+            $manualReportPath = $manualFixReportWriter->write(base_path(), $scanResult, $fixResult->unfixableRules);
+            $relativeManualReportPath = ltrim(str_replace(base_path(), '', $manualReportPath), '/');
+
+            $this->newLine();
+            note(sprintf('Generated manual fix guide: %s', $relativeManualReportPath));
+            note('Copy the "Prompt To Paste Into Your Agent" block from that file into your coding agent.');
         }
 
         if ((bool) $this->option('with-rector')) {

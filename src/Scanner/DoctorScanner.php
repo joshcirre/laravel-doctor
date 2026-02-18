@@ -64,6 +64,10 @@ class DoctorScanner
             return [$left->rule, $left->file, $left->line] <=> [$right->rule, $right->file, $right->line];
         });
 
-        return new ScanResult($diagnostics, count($files));
+        return new ScanResult(
+            diagnostics: $diagnostics,
+            scannedFileCount: count($files),
+            scannedFiles: array_values(array_map(static fn (ProjectFile $projectFile): string => $projectFile->relativePath, $files)),
+        );
     }
 }
