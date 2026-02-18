@@ -7,7 +7,7 @@ Artisan-first Laravel codebase health scanner inspired by React Doctor.
 ## Install
 
 ```bash
-composer require --dev josh/laravel-doctor
+composer require --dev joshcirre/laravel-doctor
 ```
 
 Publish config:

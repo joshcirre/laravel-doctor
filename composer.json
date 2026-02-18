@@ -1,5 +1,5 @@
 {
-  "name": "josh/laravel-doctor",
+  "name": "joshcirre/laravel-doctor",
   "description": "Artisan-first Laravel codebase health scanner with diagnostics and scoring",
   "type": "library",
   "license": "MIT",
